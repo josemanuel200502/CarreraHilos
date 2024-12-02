@@ -9,6 +9,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -31,9 +32,9 @@ public class Carrera extends javax.swing.JFrame {
     private Thread[] hilos;
     private boolean alguienHaGanado = false;
     private JProgressBar[] barras;
-    private JButton jButton1;
+    private JButton jButton1,reiniciarButton;
     private JLabel[] cochesImagenes = new JLabel[4];
-
+    
     public Carrera() {
         configurarInterfaz();
     }
@@ -42,7 +43,11 @@ public class Carrera extends javax.swing.JFrame {
         // Crear botón para iniciar la carrera
         jButton1 = new JButton("Iniciar Carrera");
         jButton1.addActionListener(evt -> iniciarCarrera());
-
+        
+        // Crear botón para reiniciar la carrera
+       reiniciarButton = new JButton("Reiniciar Carrera");
+       reiniciarButton.addActionListener(evt -> reiniciarCarrera());
+       
         // Crear barras de progreso
         barras = new JProgressBar[4];
         for (int i = 0; i < barras.length; i++) {
@@ -55,6 +60,7 @@ public class Carrera extends javax.swing.JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
+                
                 // Dibuja la carretera con carriles
                 g.setColor(Color.GRAY);
                 g.fillRect(0, 100, getWidth(), 200); // Carretera
@@ -66,27 +72,32 @@ public class Carrera extends javax.swing.JFrame {
                     g.drawLine(0, 100 + (i * carrilAltura), getWidth(), 100 + (i * carrilAltura)); // Carriles
                 }
 
-                // Dibuja la línea central
-                g.setColor(Color.WHITE);
-                g.drawLine(getWidth() / 2, 100, getWidth() / 2, 300); // Línea central de la carretera
+                
 
                 // Dibuja las líneas discontinuas en los carriles de izquierda a derecha
                 g.setColor(Color.WHITE);
                 for (int i = 0; i < getWidth(); i += 30) { // Líneas discontinuas
                     // Líneas para el primer carril
-                // Líneas para el primer carril
-                g.drawLine(i, 125, i + 15, 125); // Carril 1 (Posición Y: 125)
+                    // Líneas para el primer carril
+                    g.drawLine(i, 125, i + 15, 125); // Carril 1 (Posición Y: 125)
 
-                // Líneas para el segundo carril
-                g.drawLine(i, 175, i + 15, 175); // Carril 2 (Posición Y: 175)
+                    // Líneas para el segundo carril
+                    g.drawLine(i, 175, i + 15, 175); // Carril 2 (Posición Y: 175)
 
-                // Líneas para el tercer carril
-                g.drawLine(i, 225, i + 15, 225); // Carril 3 (Posición Y: 225)
+                    // Líneas para el tercer carril
+                    g.drawLine(i, 225, i + 15, 225); // Carril 3 (Posición Y: 225)
                 
-                //Lineas para el cuarto carril
-                g.drawLine(i,275,i +15 ,275);
-
+                   //Lineas para el cuarto carril
+                    g.drawLine(i,275,i +15 ,275);
+                
+                
                 }
+                
+                //Linea de meta
+                g.setColor(Color.white);
+                int  metaX=800;
+                int metaAncho=30;
+                g.fillRect(metaX,100,metaAncho, 200);
             }
         };
         carreteraPanel.setLayout(null);
@@ -99,10 +110,17 @@ public class Carrera extends javax.swing.JFrame {
         // Agregar los coches (imágenes) en sus respectivos carriles
        for (int i = 0; i < cochesImagenes.length; i++) { 
            try{
-               String rutaImagen = rutaBase + nombresImagenes[i];                              
-                   cochesImagenes[i] = new JLabel ( new ImageIcon(rutaImagen));
+               String rutaImagen = rutaBase + nombresImagenes[i];
+               ImageIcon originalIcon= new ImageIcon(rutaImagen);
+               
+                   //Redimension de la imageen 
+                   Image scaledImage= originalIcon.getImage().getScaledInstance(50,50,Image.SCALE_SMOOTH);
+                   ImageIcon scaledIcon= new ImageIcon(scaledImage);
+                   
+                   cochesImagenes[i] = new JLabel (scaledIcon);
                    cochesImagenes[i].setBounds(0,100+(i*50),50,50);
                    carreteraPanel.add(cochesImagenes[i]);
+                   
                    System.out.println("Cargada imagen para coche " + (i + 1) + " desde: " + rutaImagen);
                    
            } catch (Exception e){
@@ -121,14 +139,18 @@ public class Carrera extends javax.swing.JFrame {
         setLayout(new BorderLayout());
         add(barraPanel, BorderLayout.SOUTH);  // Barra de progreso en la parte inferior
         add(carreteraPanel, BorderLayout.CENTER); // Panel de carretera al centro
-        add(jButton1, BorderLayout.NORTH); // Botón al norte
-
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(jButton1);
+        buttonPanel.add(reiniciarButton);
+        add(buttonPanel, BorderLayout.NORTH); // Botones al norte
+        
         // Ajustar ventana
         setTitle("Carrera de Coches");
         setSize(1000, 500);  // Aseguramos que la ventana es suficientemente grande
         setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
     private void iniciarCarrera() {
+        jButton1.setEnabled(false);
         hilos = new Thread[4];
         alguienHaGanado = false;
 
@@ -138,12 +160,22 @@ public class Carrera extends javax.swing.JFrame {
             hilos[i].start();
         }
     }
+    
+    private void reiniciarCarrera(){
+        alguienHaGanado=false;
+        for (int i=0; i <barras.length;i++){
+            barras[i].setValue(0);
+            barras[i].setString("Coche"+(i+1)+"-0m");
+            cochesImagenes[i].setLocation(0,100+(i*50));
+            cochesImagenes[i].repaint();
+        }
+    }
 
     private void moverCoche(JProgressBar barra, int cocheNumero) {
     Random random = new Random();
     int progreso = 0;
 
-    while (progreso < META) {
+    while (progreso < META && !alguienHaGanado) {
         progreso += random.nextInt(10) + 1;
         final int valorProgreso = Math.min(progreso, META);
 
@@ -187,6 +219,10 @@ public class Carrera extends javax.swing.JFrame {
         // Mostrar el mensaje con distancias finales
         JOptionPane.showMessageDialog(this, mensaje.toString(), "Resultado de la carrera", JOptionPane.INFORMATION_MESSAGE);
 
+        
+        //Reactivar el boton de iniciar carrera
+        jButton1.setEnabled(true);
+        
         // Detener los hilos activos
         for (Thread hilo : hilos) {
             if (hilo.isAlive()) {
