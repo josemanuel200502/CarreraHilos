@@ -9,7 +9,11 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridLayout;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.Random;
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -87,13 +91,24 @@ public class Carrera extends javax.swing.JFrame {
         };
         carreteraPanel.setLayout(null);
         carreteraPanel.setPreferredSize(new Dimension(1000, 300));
-
+        
+        //Nombres de las imagenes
+        String[] nombresImagenes={"Rayo.png","chick.png", "franchesco.png", "sheriff.png"};
+        
+        String rutaBase = "C:/Users/Windows/Documents/GitHub/CarreraHilos/src/main/java/com/mycompany/carreradehilos/";
         // Agregar los coches (imágenes) en sus respectivos carriles
-        for (int i = 0; i < cochesImagenes.length; i++) {
-            cochesImagenes[i] = new JLabel(new ImageIcon("Imagenes/Rayo" + (i + 1) + ".png"));
-            cochesImagenes[i].setBounds(50, 100 + (i * 50), 50, 50); // Posición inicial de los coches
-            carreteraPanel.add(cochesImagenes[i]);
-        }
+       for (int i = 0; i < cochesImagenes.length; i++) { 
+           try{
+               String rutaImagen = rutaBase + nombresImagenes[i];                              
+                   cochesImagenes[i] = new JLabel ( new ImageIcon(rutaImagen));
+                   cochesImagenes[i].setBounds(0,100+(i*50),50,50);
+                   carreteraPanel.add(cochesImagenes[i]);
+                   System.out.println("Cargada imagen para coche " + (i + 1) + " desde: " + rutaImagen);
+                   
+           } catch (Exception e){
+               System.err.println("Error al cargar la imagen para el coche " + (i + 1) + ": " + e.getMessage());
+           }
+       }
 
         // JPanel de barras de progreso
         JPanel barraPanel = new JPanel();
@@ -125,30 +140,33 @@ public class Carrera extends javax.swing.JFrame {
     }
 
     private void moverCoche(JProgressBar barra, int cocheNumero) {
-        Random random = new Random();
-        int progreso = 0;
+    Random random = new Random();
+    int progreso = 0;
 
-        while (progreso < META) {
-            progreso += random.nextInt(10) + 1; // Avance aleatorio
-            final int valorProgreso = Math.min(progreso, META);
+    while (progreso < META) {
+        progreso += random.nextInt(10) + 1;
+        final int valorProgreso = Math.min(progreso, META);
 
-            SwingUtilities.invokeLater(() -> {
-                barra.setValue(valorProgreso);
-                barra.setString("Coche " + cocheNumero + " - " + valorProgreso + "m");
+        SwingUtilities.invokeLater(() -> {
+            barra.setValue(valorProgreso);
+            barra.setString("Coche " + cocheNumero + " - " + valorProgreso + "m");
 
-                // Mover el coche
-                cochesImagenes[cocheNumero - 1].setBounds(valorProgreso, 100 + (cocheNumero * 50), 50, 50);
-            });
+            // Animación suave de los coches
+            cochesImagenes[cocheNumero - 1].setLocation(valorProgreso, 100 + (cocheNumero - 1) * 50);
+        
+            cochesImagenes[cocheNumero-1].repaint();
+        });
 
-            try {
-                Thread.sleep(random.nextInt(100) + 50); // Espera aleatoria
-            } catch (InterruptedException e) {
-                return; // Finalizar hilo si es interrumpido
-            }
+        try {
+            Thread.sleep(random.nextInt(100) + 50);
+        } catch (InterruptedException e) {
+            return;
         }
-
-        verificarGanador(cocheNumero);
     }
+
+    verificarGanador(cocheNumero);
+}
+
 
     private synchronized void verificarGanador(int coche) {
         if (alguienHaGanado) {
