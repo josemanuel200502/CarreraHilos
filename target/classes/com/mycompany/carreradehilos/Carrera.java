@@ -106,27 +106,31 @@ public class Carrera extends javax.swing.JFrame {
         //Nombres de las imagenes
         String[] nombresImagenes={"Rayo.png","chick.png", "franchesco.png", "sheriff.png"};
         
-        String rutaBase = "C:/Users/Windows/Documents/GitHub/CarreraHilos/src/main/java/com/mycompany/carreradehilos/";
         // Agregar los coches (imágenes) en sus respectivos carriles
-       for (int i = 0; i < cochesImagenes.length; i++) { 
-           try{
-               String rutaImagen = rutaBase + nombresImagenes[i];
-               ImageIcon originalIcon= new ImageIcon(rutaImagen);
-               
-                   //Redimension de la imageen 
-                   Image scaledImage= originalIcon.getImage().getScaledInstance(50,50,Image.SCALE_SMOOTH);
-                   ImageIcon scaledIcon= new ImageIcon(scaledImage);
-                   
-                   cochesImagenes[i] = new JLabel (scaledIcon);
-                   cochesImagenes[i].setBounds(0,100+(i*50),50,50);
-                   carreteraPanel.add(cochesImagenes[i]);
-                   
-                   System.out.println("Cargada imagen para coche " + (i + 1) + " desde: " + rutaImagen);
-                   
-           } catch (Exception e){
-               System.err.println("Error al cargar la imagen para el coche " + (i + 1) + ": " + e.getMessage());
-           }
-       }
+       for (int i = 0; i < cochesImagenes.length; i++) {
+    try {
+        // Usar la ruta relativa desde la carpeta resources
+        URL imgURL = getClass().getClassLoader().getResource("com/mycompany/carreradehilos/imagenes/" + nombresImagenes[i]);
+        System.out.println("Ruta de la imagen para coche " + (i + 1) + ": " + imgURL);
+
+        if (imgURL != null) {
+            // Crear y redimensionar el icono
+            ImageIcon originalIcon = new ImageIcon(imgURL);
+            Image scaledImage = originalIcon.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH);
+            ImageIcon scaledIcon = new ImageIcon(scaledImage);
+
+            cochesImagenes[i] = new JLabel(scaledIcon);
+            cochesImagenes[i].setBounds(0, 100 + (i * 50), 50, 50);
+            carreteraPanel.add(cochesImagenes[i]);
+
+            System.out.println("Cargada imagen para coche " + (i + 1) + " desde: " + imgURL);
+        } else {
+            System.err.println("No se ha podido encontrar la imagen para el coche " + (i + 1));
+        }
+    } catch (Exception e) {
+        System.err.println("Error al cargar la imagen para el coche " + (i + 1) + ": " + e.getMessage());
+    }
+}
 
         // JPanel de barras de progreso
         JPanel barraPanel = new JPanel();
