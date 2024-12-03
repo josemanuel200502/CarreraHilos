@@ -1,8 +1,8 @@
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.mycompany.carreradehilos;
+
+package com.mycompany.carreras;
 
 import java.util.Random;
 
@@ -10,14 +10,15 @@ import java.util.Random;
  *
  * @author alumno
  */
-public class Coche  implements Runnable{
+public class Carreras implements Runnable {
+
     
     private String nombre;
     private int velocidad;
     private int posicion;
     private static String ganador=null;
     
-    public Coche(String nombre){
+    public Carreras(String nombre){
         this.nombre=nombre;
         this.velocidad= new Random().nextInt(10)+1;
         this.posicion=0;
